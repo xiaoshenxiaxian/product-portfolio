@@ -1,0 +1,116 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>观境管理台 · PC 交互原型</title>
+<style>
+  *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0f1713;color:#26322d;font-family:"Microsoft YaHei","PingFang SC",sans-serif}
+  :root{--ink:#17382d;--jade:#2f6b50;--terra:#c66c46;--gold:#b18b57;--paper:#fbf8f1;--line:#e7e1d6;--s:1}
+  .stage{position:absolute;left:50%;top:50%;width:1440px;height:900px;transform-origin:center center;background:#f3f0e9;box-shadow:0 30px 90px rgba(0,0,0,.44);overflow:hidden;border-radius:4px}
+  .stage img{display:block;width:1440px;height:900px;user-select:none;-webkit-user-drag:none}
+  #hotspots{position:absolute;inset:0;z-index:5}.hotspot{position:absolute;border:0;background:transparent;border-radius:8px;padding:0;cursor:pointer}.hotspot:hover{background:rgba(198,108,70,.08);outline:1px solid rgba(198,108,70,.35)}.show-hotspots .hotspot{background:rgba(198,108,70,.12);outline:1px dashed rgba(198,108,70,.9)}
+  .backdrop{position:absolute;inset:0;background:rgba(8,18,14,.42);backdrop-filter:blur(2px);z-index:15;opacity:0;pointer-events:none;transition:.22s}.backdrop.on{opacity:1;pointer-events:auto}
+  .drawer{position:absolute;right:0;top:0;bottom:0;width:430px;z-index:16;background:#fffdf8;box-shadow:-24px 0 70px rgba(0,0,0,.18);transform:translateX(105%);transition:.3s cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column}.drawer.on{transform:translateX(0)}
+  .drawer-head{padding:28px 28px 18px;border-bottom:1px solid var(--line);position:relative}.drawer-kicker{font-size:9px;color:var(--gold);letter-spacing:1.4px;margin-bottom:7px}.drawer h2{font:600 23px/1.2 STSong,Songti SC,serif;margin:0;color:var(--ink)}.drawer-close{position:absolute;right:22px;top:22px;width:30px;height:30px;border:0;border-radius:50%;background:#f1ece1;color:#7c827d;font-size:18px;cursor:pointer}
+  .drawer-body{padding:22px 28px;overflow:auto;flex:1}.drawer-foot{padding:16px 28px 24px;border-top:1px solid var(--line);display:flex;gap:10px}
+  .form-row{margin-bottom:15px}.form-row label{display:block;font-size:10px;color:#7c827d;margin-bottom:7px}.form-row input,.form-row select,.form-row textarea{width:100%;border:1px solid var(--line);background:#faf7f0;border-radius:10px;padding:11px 12px;font:10px "Microsoft YaHei",sans-serif;color:#26322d;outline:none}.form-row input:focus,.form-row textarea:focus{border-color:var(--jade);background:#fff}
+  .primary{border:0;border-radius:10px;background:var(--ink);color:#fff;padding:11px 18px;font-size:11px;font-weight:600;cursor:pointer}.secondary{border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);padding:10px 16px;font-size:10px;cursor:pointer;flex:1}.primary.full{flex:1}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.detail-box{background:#f6f2e9;border-radius:12px;padding:13px}.detail-box small{display:block;color:#8b908b;font-size:8px;margin-bottom:6px}.detail-box strong{font-size:11px;color:#26322d;font-weight:500}.status-line{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #eee8dc;font-size:10px;color:#7c827d}.status-line strong{color:#26322d;font-weight:500}.note{font-size:9px;line-height:1.7;color:#7c827d}
+  .command-list{display:flex;flex-direction:column;gap:6px}.command{display:flex;align-items:center;justify-content:space-between;border:1px solid #e7e1d6;background:#faf7f0;border-radius:11px;padding:11px 13px;cursor:pointer;color:#26322d;text-align:left}.command:hover{border-color:#9eb5a5;background:#fff}.command b{font-size:10px;font-weight:500}.command span{font-size:8px;color:#8c918b}
+  .toast{position:absolute;left:50%;top:34px;transform:translate(-50%,-12px);z-index:30;background:rgba(23,56,45,.96);color:#fffaf0;padding:11px 16px;border-radius:10px;font-size:10px;opacity:0;pointer-events:none;transition:.22s;box-shadow:0 10px 28px rgba(0,0,0,.22);white-space:nowrap}.toast.on{opacity:1;transform:translate(-50%,0)}
+  .tools{position:fixed;right:16px;bottom:14px;z-index:40;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:rgba(14,27,21,.9);border:1px solid rgba(255,255,255,.12);color:#d9e1dc;font-size:9px;backdrop-filter:blur(10px)}.tools b{color:#f5ead2;font-weight:500}.tools button{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#d9e1dc;border-radius:999px;padding:6px 10px;font-size:8px;cursor:pointer}.tools button:hover{background:rgba(255,255,255,.12)}
+  .scan-card{height:180px;border-radius:14px;background:#11241c;display:grid;place-items:center;position:relative;overflow:hidden;margin:12px 0 18px}.scan-card:before,.scan-card:after{content:"";position:absolute;width:220px;height:220px;border:1px solid rgba(220,205,174,.16);border-radius:50%}.scan-card:after{width:300px;height:300px}.scan-frame{width:110px;height:110px;border:2px solid #d7c39c;border-radius:8px;position:relative}.scan-frame:before{content:"扫码框";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:9px;color:#b9c4bd}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <img id="screen" alt="观境管理台页面">
+  <div id="hotspots"></div>
+  <div class="toast" id="toast"></div>
+  <div class="backdrop" id="backdrop"></div>
+  <aside class="drawer" id="drawer"><div class="drawer-head"><div class="drawer-kicker" id="drawerKicker">DETAIL</div><h2 id="drawerTitle">详情</h2><button class="drawer-close" id="drawerClose">×</button></div><div class="drawer-body" id="drawerBody"></div><div class="drawer-foot" id="drawerFoot"></div></aside>
+</div>
+<div class="tools"><b id="routeName">数据总览</b><button id="hotspotBtn">显示热区</button><button id="resetBtn">重置</button><span>管理员端原型</span></div>
+<script>
+const BASE='figma-import/';
+const nav=[
+  {id:'dashboard',x:14,y:109,w:192,h:39,label:'数据总览'},
+  {id:'gate',x:14,y:148,w:192,h:39,label:'实时核销'},
+  {id:'analytics',x:14,y:187,w:192,h:39,label:'数据分析'},
+  {id:'scenic',x:14,y:242,w:192,h:39,label:'景区管理'},
+  {id:'museum',x:14,y:281,w:192,h:39,label:'博物馆与展览'},
+  {id:'tickets',x:14,y:320,w:192,h:39,label:'票务与价格'},
+  {id:'orders',x:14,y:359,w:192,h:39,label:'订单管理'},
+  {id:'users',x:14,y:414,w:192,h:39,label:'用户与会员'},
+  {id:'content',x:14,y:453,w:192,h:39,label:'内容运营'},
+  {id:'reviews',x:14,y:492,w:192,h:39,label:'评价与客服'},
+  {id:'settings',x:14,y:547,w:192,h:39,label:'角色与设置'}
+];
+const common=[
+  ...nav,
+  {x:755,y:17,w:250,h:36,action:'search',label:'全局搜索'},
+  {x:1150,y:17,w:55,h:36,action:'notifications',label:'通知'},
+  {x:1206,y:17,w:112,h:36,action:'profile',label:'管理员'}
+];
+const screens={
+  login:{file:'00-admin-login.svg',name:'管理员登录',hotspots:[{x:918,y:516,w:344,h:48,action:'login',label:'登录后台'},{x:918,y:610,w:344,h:44,action:'wechat',label:'企业微信登录'}]},
+  dashboard:{file:'01-dashboard.svg',name:'数据总览',hotspots:[{x:1322,y:99,w:92,h:38,action:'export',label:'导出报表'},{x:794,y:630,w:570,h:48,action:'alerts',label:'待处理事项'},{x:853,y:796,w:92,h:28,action:'newScenic',label:'新增景区'},{x:954,y:796,w:92,h:28,action:'newExhibit',label:'发布展览'},{x:1055,y:796,w:92,h:28,action:'export',label:'导出订单'}]},
+  scenic:{file:'02-scenic-management.svg',name:'景区管理',hotspots:[{x:1322,y:99,w:92,h:38,action:'newScenic',label:'新增景区'},{x:1304,y:167,w:92,h:32,action:'filter',label:'筛选'},{x:252,y:300,w:1156,h:70,action:'scenicDetail',label:'景区详情'}]},
+  museum:{file:'03-museum-management.svg',name:'博物馆与展览',hotspots:[{x:1322,y:99,w:92,h:38,action:'newExhibit',label:'新建展览'},{x:252,y:254,w:1156,h:80,action:'museumDetail',label:'展馆详情'},{x:252,y:158,w:130,h:38,action:'toast',toast:'已切换至场馆管理'}]},
+  tickets:{file:'04-ticket-products.svg',name:'票务与价格',hotspots:[{x:1322,y:99,w:92,h:38,action:'newTicket',label:'新建票种'},{x:252,y:352,w:1156,h:62,action:'ticketDetail',label:'票种详情'}]},
+  orders:{file:'05-orders.svg',name:'订单管理',hotspots:[{x:1322,y:99,w:92,h:38,action:'export',label:'导出订单'},{x:252,y:258,w:1156,h:70,action:'orderDetail',label:'订单详情'}]},
+  gate:{file:'06-verification.svg',name:'实时核销',hotspots:[{x:1322,y:99,w:92,h:38,action:'device',label:'设备管理'},{x:274,y:614,w:150,h:40,action:'camera',label:'启动摄像头'},{x:436,y:614,w:140,h:40,action:'manual',label:'手动输入'},{x:964,y:520,w:416,h:48,action:'anomaly',label:'处理异常'}]},
+  users:{file:'07-users-members.svg',name:'用户与会员',hotspots:[{x:1322,y:99,w:92,h:38,action:'export',label:'导出用户'},{x:252,y:352,w:1156,h:70,action:'userDetail',label:'用户详情'}]},
+  content:{file:'08-content-operations.svg',name:'内容运营',hotspots:[{x:1322,y:99,w:92,h:38,action:'publish',label:'发布内容'},{x:252,y:186,w:376,h:190,action:'editBanner',label:'编辑运营位'},{x:264,y:475,w:736,h:48,action:'editArticle',label:'编辑内容'}]},
+  reviews:{file:'09-reviews-support.svg',name:'评价与客服',hotspots:[{x:1322,y:99,w:92,h:38,action:'export',label:'导出评价'},{x:252,y:304,w:760,h:100,action:'reply',label:'回复评价'},{x:1054,y:738,w:196,h:36,action:'reply',label:'保存并回复'}]},
+  analytics:{file:'10-analytics.svg',name:'数据分析',hotspots:[{x:1276,y:99,w:138,h:38,action:'dateRange',label:'日期范围'}]},
+  settings:{file:'11-settings-roles.svg',name:'角色与设置',hotspots:[{x:1322,y:99,w:92,h:38,action:'newRole',label:'新建角色'},{x:270,y:214,w:264,h:72,action:'role',label:'角色详情'},{x:286,y:630,w:232,h:34,action:'audit',label:'权限审计'}]}
+};
+let current='login',history=[];
+const stage=document.getElementById('stage'),img=document.getElementById('screen'),hs=document.getElementById('hotspots'),drawer=document.getElementById('drawer'),backdrop=document.getElementById('backdrop');
+function fit(){const s=Math.min(innerWidth/1440,innerHeight/900);document.documentElement.style.setProperty('--s',s);stage.style.transform='translate(-50%,-50%) scale('+s+')'}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),1800)}
+function go(id){if(!screens[id])return;if(id!==current)history.push(current);current=id;img.src=BASE+screens[id].file;document.getElementById('routeName').textContent=screens[id].name;renderHotspots();closeDrawer()}
+function renderHotspots(){hs.innerHTML='';const list=current==='login'?screens.login.hotspots:[...common,...screens[current].hotspots];list.forEach(h=>{const b=document.createElement('button');b.className='hotspot';b.title=h.label||'';Object.assign(b.style,{left:h.x+'px',top:h.y+'px',width:h.w+'px',height:h.h+'px'});b.onclick=()=>h.id?go(h.id):(h.action?actions[h.action](h):toast(h.toast||'功能已响应'));hs.appendChild(b)})}
+function openDrawer(kicker,title,body,footer){document.getElementById('drawerKicker').textContent=kicker;document.getElementById('drawerTitle').textContent=title;document.getElementById('drawerBody').innerHTML=body;document.getElementById('drawerFoot').innerHTML=footer||'';backdrop.classList.add('on');drawer.classList.add('on');const save=document.querySelector('[data-save]');if(save)save.onclick=()=>{const label=save.textContent||'';closeDrawer();toast(label.includes('核销')?'核销成功':label.includes('回复')?'评价已回复':label.includes('发布')?'内容已发布':'操作已保存')}}
+function closeDrawer(){backdrop.classList.remove('on');drawer.classList.remove('on')}
+function saveButton(text,msg){const b=document.querySelector('[data-save]');if(b)b.onclick=()=>{closeDrawer();toast(msg)}}
+const actions={
+  login:()=>{go('dashboard');toast('登录成功，欢迎回来')},
+  wechat:()=>{go('dashboard');toast('企业微信授权登录成功')},
+  search:()=>{openDrawer('GLOBAL SEARCH','全局搜索','<div class="form-row"><label>搜索订单、景区、用户或内容</label><input placeholder="输入关键词，例如 GJ1026031 / 云栖山"></div><div class="command-list">'+nav.map(n=>'<button class="command" data-nav="'+n.id+'"><b>'+n.label+'</b><span>前往模块 ›</span></button>').join('')+'</div>','<button class="secondary">取消</button>');setTimeout(()=>document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{closeDrawer();go(b.dataset.nav)}),0)},
+  notifications:()=>openDrawer('NOTIFICATIONS','运营通知','<div class="status-line"><span>12 笔订单等待核销</span><strong>10 分钟前</strong></div><div class="status-line"><span>云栖山承载率达到 78%</span><strong>18 分钟前</strong></div><div class="status-line"><span>宋韵特展余票低于 20%</span><strong>35 分钟前</strong></div><p class="note" style="margin-top:16px">通知会同步至企业微信与运营值班邮箱。</p>','<button class="primary full" data-save>全部标记已读</button>'),
+  profile:()=>openDrawer('ACCOUNT','林溪 · 超级管理员','<div class="detail-grid"><div class="detail-box"><small>所属机构</small><strong>观境文旅 · 杭州总部</strong></div><div class="detail-box"><small>角色</small><strong>超级管理员</strong></div><div class="detail-box"><small>最近登录</small><strong>2026.10.30 08:42</strong></div><div class="detail-box"><small>登录设备</small><strong>MacBook Pro · 杭州</strong></div></div><p class="note" style="margin-top:16px">管理员账号操作均会写入安全审计日志。</p>','<button class="secondary">退出登录</button><button class="primary full" data-save>账号设置</button>'),
+  export:()=>toast('报表已生成，正在下载…'),
+  alerts:()=>openDrawer('OPERATION ALERTS','待处理事项','<div class="status-line"><span>待核销异常订单</span><strong style="color:#c66c46">12 笔</strong></div><div class="status-line"><span>退款申请待审核</span><strong>5 笔</strong></div><div class="status-line"><span>低库存票种</span><strong>3 个</strong></div><p class="note" style="margin-top:16px">建议优先处理 10 分钟内到期的异常订单。</p>','<button class="primary full" data-save>批量分配处理人</button>'),
+  newScenic:()=>openDrawer('NEW SCENIC AREA','新增景区','<div class="form-row"><label>景区名称</label><input value="云栖山景区"></div><div class="form-row"><label>所在城市</label><input value="杭州市 · 余杭区"></div><div class="form-row"><label>单日最大承载</label><input value="8000"></div><div class="form-row"><label>运营状态</label><select><option>正常运营</option><option>暂停售票</option></select></div>','<button class="secondary">取消</button><button class="primary full" data-save>保存景区</button>'),
+  scenicDetail:()=>openDrawer('SCENIC DETAIL','云栖山景区','<div class="detail-grid"><div class="detail-box"><small>今日预约</small><strong>4,286 人</strong></div><div class="detail-box"><small>承载力</small><strong>78%</strong></div><div class="detail-box"><small>游客评分</small><strong>4.9 / 5</strong></div><div class="detail-box"><small>运营状态</small><strong>正常运营</strong></div></div><div class="form-row" style="margin-top:18px"><label>开放时间</label><input value="07:30 — 17:30"></div><div class="form-row"><label>承载预警阈值</label><input value="85%"></div>','<button class="secondary">查看数据</button><button class="primary full" data-save>编辑档案</button>'),
+  newExhibit:()=>openDrawer('NEW EXHIBITION','新建展览','<div class="form-row"><label>展览名称</label><input value="宋韵 · 江南生活美学"></div><div class="form-row"><label>所属场馆</label><input value="杭州博物馆 · 南馆 2F"></div><div class="form-row"><label>展期</label><input value="2026.10.01 — 2026.12.31"></div><div class="form-row"><label>预约名额 / 日</label><input value="2000"></div>','<button class="secondary">存为草稿</button><button class="primary full" data-save>发布展览</button>'),
+  museumDetail:()=>openDrawer('MUSEUM DETAIL','杭州博物馆','<div class="detail-grid"><div class="detail-box"><small>今日预约</small><strong>2,080 人</strong></div><div class="detail-box"><small>当前展览</small><strong>3 个</strong></div><div class="detail-box"><small>讲解预约</small><strong>326 人</strong></div><div class="detail-box"><small>场馆状态</small><strong>正常开放</strong></div></div><div class="form-row" style="margin-top:18px"><label>开放时间</label><input value="09:00 — 17:00 · 周一闭馆"></div>','<button class="secondary">查看展览</button><button class="primary full" data-save>编辑场馆</button>'),
+  newTicket:()=>openDrawer('NEW TICKET','新建票种','<div class="form-row"><label>票种名称</label><input value="云栖山 · 成人票"></div><div class="form-row"><label>销售价格</label><input value="68"></div><div class="form-row"><label>每日库存</label><input value="10000"></div><div class="form-row"><label>销售时间</label><input value="2026.10.01 — 2026.11.30"></div>','<button class="secondary">取消</button><button class="primary full" data-save>保存并上架</button>'),
+  ticketDetail:()=>openDrawer('TICKET PRODUCT','云栖山 · 成人票','<div class="detail-grid"><div class="detail-box"><small>销售价</small><strong>¥ 68</strong></div><div class="detail-box"><small>剩余库存</small><strong>8,240</strong></div><div class="detail-box"><small>今日销量</small><strong>1,206</strong></div><div class="detail-box"><small>状态</small><strong>在售</strong></div></div><p class="note" style="margin-top:16px">价格变更将同步至小程序、分销渠道与现场售票窗口。</p>','<button class="secondary">库存调整</button><button class="primary full" data-save>编辑票种</button>'),
+  orderDetail:()=>openDrawer('ORDER DETAIL','GJ1026031','<div class="detail-grid"><div class="detail-box"><small>商品</small><strong>云栖山 · 成人票</strong></div><div class="detail-box"><small>支付金额</small><strong>¥ 63</strong></div><div class="detail-box"><small>游客</small><strong>林溪</strong></div><div class="detail-box"><small>状态</small><strong>待使用</strong></div></div><div class="form-row" style="margin-top:18px"><label>使用日期</label><input value="2026.10.31 · 周六"></div><div class="form-row"><label>订单备注</label><textarea rows="3">小程序渠道订单，已使用新客优惠券 5 元。</textarea></div>','<button class="secondary">申请退款</button><button class="primary full" data-save>人工核销</button>'),
+  device:()=>openDrawer('DEVICE MANAGEMENT','核销设备','<div class="status-line"><span>东门 A-01</span><strong>在线</strong></div><div class="status-line"><span>南门 A-02</span><strong>在线</strong></div><div class="status-line"><span>团队通道 B-01</span><strong>在线</strong></div><p class="note" style="margin-top:16px">全部设备运行正常，最近心跳 10:28:42。</p>','<button class="primary full" data-save>设备健康检查</button>'),
+  camera:()=>{toast('摄像头已启动，正在识别二维码…');setTimeout(()=>toast('识别成功：GJ1026031 · 云栖山'),1200)},
+  manual:()=>openDrawer('MANUAL CHECK','手动输入核销码','<div class="form-row"><label>订单号 / 核销码</label><input placeholder="请输入订单号或 12 位核销码"></div><div class="scan-card"><div class="scan-frame"></div></div><p class="note">手动核销会记录操作人、时间和设备信息。</p>','<button class="secondary">取消</button><button class="primary full" data-save>确认核销</button>'),
+  anomaly:()=>openDrawer('ANOMALY','异常凭证处理','<div class="status-line"><span>GJ1025988 · 重复扫码</span><strong style="color:#c66c46">待处理</strong></div><div class="status-line"><span>GJ1025964 · 订单已退款</span><strong>待处理</strong></div><button class="secondary" style="margin-top:14px;width:100%">标记为已处理</button>','<button class="secondary">忽略</button><button class="primary full" data-save>全部处理完成</button>'),
+  userDetail:()=>openDrawer('USER PROFILE','林溪 · 山岚会员','<div class="detail-grid"><div class="detail-box"><small>累计消费</small><strong>¥ 1,286</strong></div><div class="detail-box"><small>订单数</small><strong>12</strong></div><div class="detail-box"><small>最近活跃</small><strong>10 分钟前</strong></div><div class="detail-box"><small>账号状态</small><strong>正常</strong></div></div><div class="status-line" style="margin-top:18px"><span>会员等级</span><strong>山岚会员 · 7 / 24 集章</strong></div><div class="status-line"><span>偏好</span><strong>山水徒步 / 博物馆</strong></div>','<button class="secondary">发送消息</button><button class="primary full" data-save>编辑用户</button>'),
+  publish:()=>openDrawer('PUBLISH CONTENT','发布内容','<div class="form-row"><label>内容标题</label><input placeholder="输入内容标题"></div><div class="form-row"><label>内容类型</label><select><option>探索推荐</option><option>活动专题</option><option>展览内容</option></select></div><div class="form-row"><label>发布时间</label><input value="2026.10.30 18:00"></div>','<button class="secondary">存为草稿</button><button class="primary full" data-save>提交审核</button>'),
+  editBanner:()=>openDrawer('OPERATING BANNER','编辑首页运营位','<div class="form-row"><label>运营位标题</label><input value="秋入云栖"></div><div class="form-row"><label>跳转页面</label><input value="云栖山景区详情"></div><div class="form-row"><label>上线时间</label><input value="2026.10.01 — 2026.11.30"></div>','<button class="secondary">预览</button><button class="primary full" data-save>保存运营位</button>'),
+  editArticle:()=>openDrawer('CONTENT ITEM','去山里看一场雾：径山秋日路线','<div class="form-row"><label>内容标题</label><input value="去山里看一场雾：径山秋日路线"></div><div class="form-row"><label>状态</label><select><option>已发布</option><option>下线</option></select></div><p class="note">曝光 86,420 · 点击率 12.8% · 收藏 2,160</p>','<button class="secondary">下线</button><button class="primary full" data-save>保存内容</button>'),
+  reply:()=>openDrawer('REPLY REVIEW','回复林溪的评价','<div class="form-row"><label>游客评价</label><textarea rows="3">竹海很安静，路线指引也很清楚。茶亭的桂花乌龙值得停下来喝一杯。</textarea></div><div class="form-row"><label>回复内容</label><textarea rows="4">感谢你的分享，期待下次再在观境见。</textarea></div>','<button class="secondary">稍后回复</button><button class="primary full" data-save>保存并回复</button>'),
+  dateRange:()=>openDrawer('DATE RANGE','选择分析时间','<div class="form-row"><label>开始日期</label><input value="2026.10.01"></div><div class="form-row"><label>结束日期</label><input value="2026.10.30"></div><div class="form-row"><label>对比周期</label><select><option>上一周期</option><option>去年同期</option></select></div>','<button class="secondary">取消</button><button class="primary full" data-save>应用时间范围</button>'),
+  newRole:()=>openDrawer('NEW ROLE','新建角色','<div class="form-row"><label>角色名称</label><input placeholder="例如：区域运营"></div><div class="form-row"><label>数据范围</label><select><option>全部门店与场馆</option><option>指定景区</option><option>指定博物馆</option></select></div><div class="form-row"><label>角色说明</label><textarea rows="3"></textarea></div>','<button class="secondary">取消</button><button class="primary full" data-save>创建角色</button>'),
+  role:()=>openDrawer('ROLE DETAIL','超级管理员','<div class="status-line"><span>成员数量</span><strong>2 人</strong></div><div class="status-line"><span>数据范围</span><strong>全部门店与场馆</strong></div><div class="status-line"><span>最近变更</span><strong>2026.10.29 16:42</strong></div><p class="note" style="margin-top:16px">该角色拥有全部模块的查看、新增、编辑、审批与导出权限。</p>','<button class="secondary">复制角色</button><button class="primary full" data-save>编辑权限</button>'),
+  audit:()=>openDrawer('AUDIT LOG','权限审计日志','<div class="status-line"><span>林溪 修改了「票务与价格」权限</span><strong>昨天 16:42</strong></div><div class="status-line"><span>周宁 导出了订单报表</span><strong>昨天 14:08</strong></div><div class="status-line"><span>系统 轮换管理员登录密钥</span><strong>10.28 02:00</strong></div>','<button class="primary full" data-save>导出审计日志</button>')
+};
+document.getElementById('drawerClose').onclick=closeDrawer;backdrop.onclick=closeDrawer;
+document.getElementById('hotspotBtn').onclick=function(){const on=stage.classList.toggle('show-hotspots');this.textContent=on?'隐藏热区':'显示热区'};
+document.getElementById('resetBtn').onclick=function(){history=[];go('login');toast('演示已重置')};
+addEventListener('resize',fit);fit();go('login');
+</script>
+<script src="only-phone.js"></script>
+</body>
+</html>

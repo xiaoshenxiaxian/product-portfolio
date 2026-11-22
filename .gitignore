@@ -1,0 +1,5 @@
+# 本仓库只放对外可看的作品文件
+*.docx
+*.zip
+.DS_Store
+Thumbs.db

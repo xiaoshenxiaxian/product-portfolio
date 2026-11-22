@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>桌面美化 App 交互原型 · 浏览 / 详情 / 套用 / AI / 订阅</title>
+<style>
+  :root{
+    --ink:#1E1B18; --ink2:#3A342E; --muted:#8A8178; --line:#E9E3D9;
+    --bg:#F8F5F0; --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{background:#E7E1D8;display:flex;align-items:center;justify-content:center;overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);}
+  .phone{width:390px;height:844px;background:var(--bg);border-radius:46px;overflow:hidden;position:relative;
+    box-shadow:0 40px 90px rgba(0,0,0,.28);}
+  body.shot{align-items:flex-start;justify-content:flex-start;background:var(--bg);}
+  body.shot .phone{border-radius:0;box-shadow:none;}
+
+  .screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding-bottom:96px;
+    scrollbar-width:none;background:var(--bg);}
+  .screen::-webkit-scrollbar{display:none;}
+  .hidden{display:none !important;}
+
+  /* status */
+  .status{height:44px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;}
+  .status .right{display:flex;align-items:center;gap:5px;}
+  .bars{display:flex;align-items:flex-end;gap:1.5px;height:9px;}
+  .bars i{width:2.5px;background:var(--ink);border-radius:1px;}
+  .bars i:nth-child(1){height:4px}.bars i:nth-child(2){height:6px}.bars i:nth-child(3){height:8px}
+  .batt{width:20px;height:10px;border:1.5px solid var(--ink);border-radius:3px;position:relative;}
+  .batt:after{content:'';position:absolute;right:-4px;top:3px;width:2px;height:4px;background:var(--ink);border-radius:0 1px 1px 0}
+  .batt i{position:absolute;inset:1.5px;width:11px;background:var(--ink);border-radius:1px}
+
+  /* common */
+  .hdr{padding:4px 20px 0;display:flex;align-items:center;justify-content:space-between;}
+  .hdr h1{margin:0;font-size:27px;font-weight:800;letter-spacing:-.8px;}
+  .icon{width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    box-shadow:0 2px 10px rgba(0,0,0,.06);cursor:pointer;}
+  .icon svg{width:16px;height:16px;stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .vip-dot{font-size:11px;font-weight:800;color:#8A6A1F;background:linear-gradient(135deg,#FBE7B4,#F3CB6E);
+    padding:6px 11px;border-radius:999px;box-shadow:0 2px 8px rgba(232,181,77,.35);cursor:pointer;}
+  .search{margin:12px 20px 0;height:38px;background:#fff;border-radius:19px;display:flex;align-items:center;
+    gap:8px;padding:0 14px;color:#A39A90;font-size:12.5px;box-shadow:0 2px 10px rgba(0,0,0,.04);}
+  .search svg{width:14px;height:14px;stroke:#A39A90;fill:none;stroke-width:2;stroke-linecap:round;flex:none;}
+  .search input{border:0;outline:0;width:100%;font:inherit;color:var(--ink);background:transparent;}
+  .chips{display:flex;gap:20px;padding:16px 22px 2px;font-size:13.5px;color:var(--muted);white-space:nowrap;
+    overflow-x:auto;scrollbar-width:none;}
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{position:relative;padding-bottom:8px;cursor:pointer;}
+  .chip.on{color:var(--ink);font-weight:800;}
+  .chip.on:after{content:'';position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:16px;height:3px;border-radius:2px;background:var(--ink);}
+
+  .hero{margin:8px 20px 0;height:112px;border-radius:24px;padding:18px;position:relative;overflow:hidden;
+    background:linear-gradient(115deg,#F7DCC8 0%,#EBD9F4 55%,#D9EAF2 100%);}
+  .hero h3{margin:0;font-size:17px;}
+  .hero p{margin:6px 0 0;font-size:11.5px;color:#5D544B;}
+  .hero .pill{position:absolute;right:16px;bottom:15px;background:var(--ink);color:#fff;font-size:11px;
+    padding:7px 14px;border-radius:999px;font-weight:600;cursor:pointer;}
+  .hero .blob{position:absolute;border-radius:50%;filter:blur(2px);opacity:.55;}
+  .b1{width:76px;height:76px;background:#FFF3E4;right:-10px;top:-18px;}
+  .b2{width:46px;height:46px;background:#F6D9EA;right:64px;bottom:-16px;}
+
+  .sec{margin:16px 20px 0;}
+  .sec-h{display:flex;align-items:baseline;justify-content:space-between;}
+  .sec-h h4{margin:0;font-size:15.5px;}
+  .sec-h span{font-size:11.5px;color:#A39A90;cursor:pointer;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+  .card{background:var(--card);border-radius:18px;padding:8px;box-shadow:0 3px 14px rgba(0,0,0,.04);cursor:pointer;
+    position:relative;transition:transform .12s;}
+  .card:active{transform:scale(.98);}
+  .thumb{height:74px;border-radius:13px;display:grid;place-items:center;font-size:26px;position:relative;overflow:hidden;}
+  .grid2 .thumb{height:88px;font-size:32px;}
+  .badge{position:absolute;top:6px;left:6px;background:rgba(30,27,24,.88);color:#fff;font-size:8.5px;padding:2px 6px;border-radius:6px;}
+  .fav{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.85);
+    display:grid;place-items:center;font-size:11px;color:#B9AEA1;}
+  .fav.on{color:#E0607E;}
+  .card p{margin:7px 3px 1px;font-size:11.5px;color:var(--ink2);}
+  .card small{display:block;margin:0 3px;font-size:9.5px;color:#A39A90;}
+
+  .ai-entry{margin:12px 20px 0;border-radius:20px;padding:14px 16px;display:flex;align-items:center;gap:12px;
+    background:linear-gradient(135deg,#1E1B18,#3A2F24);color:#fff;cursor:pointer;}
+  .ai-entry .em{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.12);display:grid;place-items:center;font-size:18px;}
+  .ai-entry h4{margin:0;font-size:13.5px;}
+  .ai-entry p{margin:2px 0 0;font-size:10.5px;color:#CDBFAE;}
+  .ai-entry .go{margin-left:auto;font-size:11px;color:#F3CB6E;}
+
+  .tabs{position:absolute;left:0;right:0;bottom:0;height:80px;padding:9px 12px 0;display:flex;justify-content:space-around;
+    background:rgba(255,255,255,.94);backdrop-filter:blur(18px);border-top:1px solid rgba(30,27,24,.06);}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9.5px;color:#A39A90;width:56px;cursor:pointer;}
+  .tab .ic{width:26px;height:26px;border-radius:9px;display:grid;place-items:center;background:#EFEAE2;}
+  .tab .ic svg{width:14px;height:14px;stroke:#8A8178;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+  .tab.on{color:var(--ink);font-weight:800;}
+  .tab.on .ic{background:var(--ink);}
+  .tab.on .ic svg{stroke:#fff;}
+
+  /* detail */
+  .dt{position:absolute;inset:0;overflow-y:auto;padding-bottom:110px;background:var(--dtbg,#F8F5F0);scrollbar-width:none;}
+  .dt::-webkit-scrollbar{display:none;}
+  .dt-top{display:flex;justify-content:space-between;padding:8px 18px 0;position:sticky;top:0;z-index:5;}
+  .dt-hero{padding:6px 20px 0;display:flex;justify-content:center;}
+  .mock{width:168px;height:330px;background:#141210;border-radius:30px;padding:6px;box-shadow:0 24px 50px rgba(0,0,0,.22);}
+  .mock-screen{height:100%;border-radius:24px;padding:10px 8px;display:flex;flex-direction:column;gap:8px;overflow:hidden;}
+  .mock-widget{background:rgba(255,255,255,.82);border-radius:12px;padding:7px 8px;font-size:9px;color:#3A342E;display:flex;justify-content:space-between;}
+  .mock-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px 6px;margin-top:2px;}
+  .mock-grid i{aspect-ratio:1;border-radius:9px;display:grid;place-items:center;font-size:12px;font-style:normal;}
+  .mock-music{background:rgba(255,255,255,.78);border-radius:12px;padding:7px 8px;font-size:8.5px;color:#3A342E;display:flex;flex-direction:column;gap:5px;}
+  .mock-music em{display:block;height:3px;border-radius:2px;background:linear-gradient(90deg,#C9A27A,#E8D3BF 60%,#EFE6DB);}
+  .mock-photo{flex:1;border-radius:14px;background:rgba(255,255,255,.55);display:grid;place-items:center;font-size:34px;}
+  .mock-2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:auto;}
+  .mock-2 i{height:34px;border-radius:10px;display:grid;place-items:center;font-size:12px;font-style:normal;background:rgba(255,255,255,.8);}
+  .dt-body{padding:16px 22px 0;}
+  .dt-body h2{margin:0;font-size:22px;letter-spacing:-.5px;}
+  .dt-meta{font-size:11.5px;color:#8A8178;margin-top:5px;}
+  .dt-tags{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+  .dt-tag{font-size:10px;color:#5D544B;background:#fff;border-radius:999px;padding:5px 10px;box-shadow:0 2px 8px rgba(0,0,0,.04);}
+  .dt-desc{margin:12px 0 0;font-size:12px;color:#5D544B;line-height:1.65;}
+  .incl{display:flex;gap:10px;margin-top:12px;}
+  .incl div{flex:1;background:#fff;border-radius:14px;padding:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.04);}
+  .incl b{display:block;font-size:13px;}
+  .incl span{font-size:9.5px;color:#A39A90;}
+  .dt-cta{position:absolute;left:0;right:0;bottom:0;padding:12px 20px 24px;background:rgba(248,245,240,.94);
+    backdrop-filter:blur(16px);display:flex;gap:10px;align-items:center;}
+  .dt-cta .fav-btn{width:48px;height:48px;border-radius:16px;background:#fff;display:grid;place-items:center;font-size:18px;color:#B9AEA1;}
+  .dt-cta .fav-btn.on{color:#E0607E;}
+  .btn{width:100%;border:0;border-radius:16px;padding:15px;font-size:14.5px;font-weight:800;font-family:inherit;cursor:pointer;}
+  .btn-dark{background:var(--ink);color:#fff;}
+  .btn-ghost{background:#F2EEE6;color:var(--ink2);margin-top:9px;}
+  .btn-gold{background:linear-gradient(135deg,#F3C766,#E8A93C);color:#2B2113;}
+
+  /* ai */
+  .ai-wrap{padding:6px 20px 0;}
+  .ai-wrap h2{margin:4px 0 0;font-size:24px;letter-spacing:-.6px;}
+  .ai-wrap .sub{margin:6px 0 14px;font-size:12px;color:#8A8178;}
+  .ai-panel{background:#fff;border-radius:20px;padding:14px;box-shadow:0 6px 20px rgba(0,0,0,.05);}
+  .ai-label{font-size:11px;color:#8A8178;margin:0 0 8px;}
+  .selchips{display:flex;gap:8px;flex-wrap:wrap;}
+  .selchip{font-size:11.5px;padding:7px 12px;border-radius:999px;background:#F4F0E9;color:#5D544B;cursor:pointer;border:1px solid transparent;}
+  .selchip.on{background:var(--ink);color:#fff;}
+  .ai-panel textarea{width:100%;margin-top:12px;border:0;outline:0;resize:none;background:#F8F5EF;border-radius:14px;
+    padding:12px;font:inherit;font-size:12px;color:var(--ink2);height:64px;}
+  .ai-panel .btn{margin-top:12px;}
+  .ai-tip{margin-top:14px;background:#FFFDF8;border:1px dashed #E6D9C2;border-radius:14px;padding:11px 12px;
+    font-size:11px;color:#7A6A55;line-height:1.6;}
+  .sk{height:120px;border-radius:16px;background:linear-gradient(100deg,#EFE9DF 30%,#F8F4EC 50%,#EFE9DF 70%);
+    background-size:200% 100%;animation:sh 1.2s infinite;}
+  @keyframes sh{0%{background-position:120% 0}100%{background-position:-20% 0}}
+
+  /* overlays */
+  .dim{position:absolute;inset:0;background:rgba(22,18,14,.46);opacity:0;pointer-events:none;transition:.28s;z-index:20;}
+  .dim.show{opacity:1;pointer-events:auto;}
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:30px 30px 0 0;padding:10px 20px 26px;
+    transform:translateY(102%);transition:transform .34s cubic-bezier(.2,.85,.2,1);z-index:21;box-shadow:0 -12px 40px rgba(0,0,0,.18);}
+  .sheet.show{transform:translateY(0);}
+  .grab{width:38px;height:4px;border-radius:2px;background:#E7E1D7;margin:0 auto 14px;}
+  .sheet .prev{height:108px;border-radius:18px;display:grid;place-items:center;font-size:40px;background:linear-gradient(130deg,#FBE3CF,#EFD9F1 60%,#DDEBF1);}
+  .sheet h3{margin:13px 0 3px;font-size:19px;}
+  .sheet .meta{font-size:11.5px;color:#8A8178;}
+  .sheet .why{margin:11px 0 0;padding:11px;background:#F8F5EF;border-radius:14px;font-size:11.5px;color:#5D544B;line-height:1.55;}
+  .note{font-size:10.5px;color:#A39A90;text-align:center;margin-top:9px;line-height:1.5;}
+
+  .apply{position:absolute;inset:0;background:rgba(248,245,240,.97);display:none;place-items:center;text-align:center;z-index:30;}
+  .apply.show{display:grid;}
+  .ring{width:64px;height:64px;border-radius:50%;border:4px solid #E9E1D5;border-top-color:var(--ink);
+    animation:spin 0.9s linear infinite;margin:0 auto 16px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .apply h3{margin:0;font-size:18px;}
+  .apply p{margin:6px 0 0;font-size:11.5px;color:#8A8178;}
+
+  .toast{position:absolute;left:50%;bottom:104px;transform:translate(-50%,16px);background:rgba(30,27,24,.94);color:#fff;
+    font-size:11.5px;padding:10px 16px;border-radius:999px;opacity:0;transition:.25s;white-space:nowrap;z-index:40;}
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  /* paywall */
+  .pw{position:absolute;inset:0;background:var(--bg);overflow-y:auto;padding-bottom:26px;scrollbar-width:none;}
+  .pw::-webkit-scrollbar{display:none;}
+  .pw-top{display:flex;align-items:center;justify-content:space-between;padding:12px 20px 0;}
+  .pw-top .ttl{font-size:14px;font-weight:800;}
+  .pw-top .lnk{font-size:11.5px;color:#8A8178;cursor:pointer;}
+  .pw-hero{margin:14px 20px 0;padding:20px;border-radius:26px;color:#fff;position:relative;overflow:hidden;
+    background:radial-gradient(120% 140% at 100% 0%,#5A4832 0%,#2B2620 55%);}
+  .pw-hero:after{content:'';position:absolute;width:120px;height:120px;border-radius:50%;background:rgba(232,181,77,.25);right:-30px;bottom:-40px;filter:blur(8px);}
+  .pw-hero h2{margin:0;font-size:20px;letter-spacing:-.5px;line-height:1.3;}
+  .pw-hero p{margin:8px 0 0;font-size:11px;color:#D8CCBC;}
+  .perks{display:flex;gap:8px;margin:14px 20px 0;}
+  .perk{flex:1;background:#fff;border-radius:14px;padding:9px 6px;text-align:center;font-size:10px;color:#5D544B;
+    box-shadow:0 3px 12px rgba(0,0,0,.04);line-height:1.5;display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .perk svg{width:16px;height:16px;stroke:#6E665D;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+  .plans{margin:14px 20px 0;display:flex;flex-direction:column;gap:9px;}
+  .plan{border:1.6px solid #E8E1D6;background:#fff;border-radius:20px;padding:14px 16px;position:relative;cursor:pointer;transition:.15s;}
+  .plan.sel{border-color:var(--ink);box-shadow:0 10px 26px rgba(30,27,24,.08);}
+  .plan .row{display:flex;justify-content:space-between;align-items:baseline;}
+  .plan .nm{font-size:13.5px;font-weight:800;}
+  .plan .pr{font-size:21px;font-weight:800;letter-spacing:-.5px;}
+  .plan .pr small{font-size:11px;font-weight:500;color:#8A8178;}
+  .plan .ds{font-size:10.5px;color:#8A8178;margin-top:3px;}
+  .plan .tag{position:absolute;top:-9px;right:14px;background:var(--ink);color:#fff;font-size:9px;padding:3px 8px;border-radius:8px;}
+  .cta{margin:14px 20px 0;}
+  .proof{margin:10px 24px 0;text-align:center;font-size:10.5px;color:#9A928A;}
+  .legal{margin:10px 26px 0;font-size:10px;color:#9A928A;line-height:1.65;text-align:center;}
+  .legal b{color:#6E665D;font-weight:700;}
+
+  .success{position:absolute;inset:0;background:rgba(248,245,240,.97);display:none;place-items:center;text-align:center;padding:0 34px;z-index:35;}
+  .success.show{display:grid;}
+  .check{width:70px;height:70px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:28px;margin:0 auto 14px;}
+  .success h3{margin:0;font-size:20px;}
+  .success p{margin:8px 0 18px;font-size:12px;color:#8A8178;line-height:1.6;}
+
+  @media (max-width:430px){
+    body{background:var(--bg);}
+    .phone{width:100vw;height:100dvh;border-radius:0;box-shadow:none;}
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- ================= BROWSE ================= -->
+  <section class="screen" id="browse">
+    <div class="status"><span>9:41</span><span class="right">
+      <span class="bars"><i></i><i></i><i></i></span>
+      <svg width="15" height="11" viewBox="0 0 15 11" fill="none"><path d="M1 4.2C3.8 1.6 6.2 1.6 9 4.2M3.2 6.8c1.6-1.4 2.9-1.4 4.5 0" stroke="#1E1B18" stroke-width="1.5" stroke-linecap="round"/><circle cx="7.5" cy="9.4" r="1" fill="#1E1B18"/></svg>
+      <span class="batt"><i></i></span></span>
+    </div>
+
+    <div class="hdr">
+      <h1>组件</h1>
+      <div class="acts" style="display:flex;gap:8px;align-items:center">
+        <span class="vip-dot" onclick="goPay()">VIP</span>
+        <div class="icon" onclick="toast('演示版只做了「组件」这条线')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></div>
+      </div>
+    </div>
+
+    <div class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" placeholder="搜「奶油小熊」或「冬日」" oninput="filterCards(this.value)">
+    </div>
+
+    <div class="chips">
+      <span class="chip" onclick="toast('演示版：广场页暂未开放')">广场</span>
+      <span class="chip on">推荐</span>
+      <span class="chip" onclick="toast('演示版：iOS 27 专区暂未开放')">iOS 27</span>
+      <span class="chip" onclick="toast('演示版：套装页暂未开放')">套装</span>
+      <span class="chip" onclick="toast('演示版：锁屏页暂未开放')">锁屏</span>
+      <span class="chip" onclick="toast('演示版：上新页暂未开放')">上新</span>
+    </div>
+
+    <div class="hero">
+      <div class="blob b1"></div><div class="blob b2"></div>
+      <h3>冬日奶油季</h3>
+      <p>21 套新主题 · 一键换整套</p>
+      <span class="pill" onclick="openDetail('bear')">去看看</span>
+    </div>
+
+    <div class="ai-entry" onclick="showScreen('ai')">
+      <div class="em">✨</div>
+      <div><h4>AI 生成我的桌面</h4><p>一句话 / 一张照片，生成 4 套</p></div>
+      <div class="go">去试试 ›</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><h4>锁屏小组件</h4><span onclick="toast('演示版：更多组件暂未开放')">更多 ›</span></div>
+      <div class="grid3">
+        <div class="card" data-name="在一起365 倒数日" onclick="openDetail('count')">
+          <div class="thumb" style="background:linear-gradient(140deg,#E7DDF7,#F3E9FA)">🎂<span class="fav" onclick="fav(event,this)">♡</span></div>
+          <p>在一起 365</p><small>倒数日</small>
+        </div>
+        <div class="card" data-name="我的电量 实时电量" onclick="openDetail('batt')">
+          <div class="thumb" style="background:linear-gradient(140deg,#E2EAF8,#EDF3FB)">🔋<span class="fav" onclick="fav(event,this)">♡</span></div>
+          <p>我的电量</p><small>实时电量</small>
+        </div>
+        <div class="card" data-name="奶油兔 贴纸" onclick="openDetail('rabbit')">
+          <div class="thumb" style="background:linear-gradient(140deg,#FBE6EA,#FDEEF1)">🐰<span class="fav" onclick="fav(event,this)">♡</span></div>
+          <p>奶油兔</p><small>贴纸</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><h4>热门</h4><span onclick="toast('演示版：热门榜暂未开放')">更多 ›</span></div>
+      <div class="grid2">
+        <div class="card" data-name="奶油小熊 整套" onclick="openDetail('bear')">
+          <div class="thumb" style="background:linear-gradient(140deg,#F7DFC9,#EFD8F2)"><span class="badge">VIP</span>🐻<span class="fav" onclick="fav(event,this)">♡</span></div>
+          <p>奶油小熊 · 整套</p><small>12 组件 · 40 图标</small>
+        </div>
+        <div class="card" data-name="月相时钟 动态组件" onclick="openDetail('moon')">
+          <div class="thumb" style="background:linear-gradient(140deg,#DCEBE3,#EAF3EE)"><span class="badge">新</span>🌙<span class="fav" onclick="fav(event,this)">♡</span></div>
+          <p>月相时钟</p><small>动态组件</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab on"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></span>组件</div>
+      <div class="tab" onclick="toast('演示版：灵动岛流暂未开放')"><span class="ic"><svg viewBox="0 0 24 24"><rect x="6" y="8" width="12" height="8" rx="4"/><path d="M9 12h6"/></svg></span>灵动岛</div>
+      <div class="tab" onclick="toast('演示版：主题流暂未开放')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M8 4l4 3 4-3v6H8z"/><path d="M6 12h12l-1 8H7z"/></svg></span>主题</div>
+      <div class="tab" onclick="toast('演示版：壁纸流暂未开放')"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 16l5-5 4 4 3-3 6 6"/></svg></span>壁纸</div>
+      <div class="tab" onclick="toast('演示版：更多页暂未开放')"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg></span>更多</div>
+    </div>
+  </section>
+
+  <!-- ================= DETAIL ================= -->
+  <section class="screen hidden" id="detail">
+    <div class="dt" id="dtScroll">
+      <div class="dt-top">
+        <div class="icon" onclick="backFromDetail()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div>
+        <div class="icon" onclick="share()"><svg viewBox="0 0 24 24"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M5 14v5h14v-5"/></svg></div>
+      </div>
+      <div class="dt-hero"><div class="mock"><div class="mock-screen" id="dtMock"></div></div></div>
+      <div class="dt-body">
+        <h2 id="dtName">奶油小熊 · 整套</h2>
+        <div class="dt-meta" id="dtMeta">12 个组件 · 40 个图标 · 1 张壁纸</div>
+        <div class="dt-tags" id="dtTags"><span class="dt-tag">奶油色</span><span class="dt-tag">冬日</span><span class="dt-tag">4.9 分</span></div>
+        <p class="dt-desc" id="dtDesc">奶油色系 + 圆角图标，适合冬天。包含锁屏与桌面两套布局，按 4×6 网格排好，套用后不用再调。</p>
+        <div class="incl">
+          <div><b>12</b><span>组件</span></div>
+          <div><b>40</b><span>图标</span></div>
+          <div><b>1</b><span>壁纸</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="dt-cta">
+      <div class="fav-btn" id="dtFav" onclick="favDetail()">♡</div>
+      <button class="btn btn-dark" id="dtApply" onclick="applyCurrent()">一键套用</button>
+    </div>
+  </section>
+
+  <!-- ================= AI ================= -->
+  <section class="screen hidden" id="ai">
+    <div class="status"><span>9:41</span><span class="right"><span class="bars"><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+    <div class="ai-wrap">
+      <div class="icon" onclick="showScreen('browse')" style="margin-bottom:8px"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div>
+      <h2>AI 生成我的桌面</h2>
+      <p class="sub">选一个感觉，写一句话，生成 4 套完整桌面。</p>
+
+      <div class="ai-panel">
+        <p class="ai-label">想要什么感觉？</p>
+        <div class="selchips">
+          <span class="selchip on" onclick="pickStyle(this)">奶油</span>
+          <span class="selchip" onclick="pickStyle(this)">暗黑</span>
+          <span class="selchip" onclick="pickStyle(this)">清新</span>
+          <span class="selchip" onclick="pickStyle(this)">复古</span>
+        </div>
+        <textarea id="prompt">下雪的窗边，一杯热可可，奶油色</textarea>
+        <button class="btn btn-dark" onclick="generate()">生成 4 套</button>
+      </div>
+
+      <div class="sec" style="margin-top:18px">
+        <div class="sec-h"><h4>最近生成</h4><span onclick="toast('演示版：历史记录暂未开放')">查看全部 ›</span></div>
+        <div class="grid2">
+          <div class="card" onclick="openDetail('ai1')">
+            <div class="thumb" style="background:linear-gradient(150deg,#F3E7D8,#E8E3F3)">❄️</div>
+            <p>雪窗奶油</p><small>今天 14:20</small>
+          </div>
+          <div class="card" onclick="openDetail('ai2')">
+            <div class="thumb" style="background:linear-gradient(150deg,#2B2A33,#3A3340)">🌌</div>
+            <p>雪夜暗黑</p><small>昨天 21:05</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-tip">💡 小技巧：写「光线 + 颜色 + 一个物件」，比如「清晨窗边、奶油色、一杯咖啡」，生成会更准。</div>
+      <div class="sec" style="margin-top:14px">
+        <div class="sec-h"><h4>试试这些</h4></div>
+        <div class="selchips" style="margin-top:8px">
+          <span class="selchip" onclick="usePrompt('圣诞红绿，壁炉和热红酒')">圣诞红绿</span>
+          <span class="selchip" onclick="usePrompt('极简黑白，留白和细线')">极简黑白</span>
+          <span class="selchip" onclick="usePrompt('备考倒计时，蓝色和便签')">备考倒计时</span>
+        </div>
+      </div>
+
+      <div id="skWrap" class="hidden" style="margin-top:16px">
+        <div class="grid2"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+        <p class="note" style="margin-top:10px">正在生成… 约 6 秒</p>
+      </div>
+
+      <div id="aiResults" class="hidden">
+        <div class="sec-h" style="margin-top:16px"><h4>为你生成</h4><span onclick="generate()">换一批</span></div>
+        <div class="grid2" id="resultGrid"></div>
+        <p class="note">生成结果仅示意，真实产品需接图像模型与审核</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PAYWALL ================= -->
+  <section class="screen hidden" id="paywall">
+    <div class="pw">
+      <div class="status"><span>9:41</span><span class="right"><span class="bars"><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+      <div class="pw-top">
+        <div class="icon" onclick="backFromPay()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div>
+        <div class="ttl">解锁 VIP</div>
+        <div class="lnk" onclick="toast('已恢复购买（原型演示）')">恢复购买</div>
+      </div>
+      <div class="pw-hero">
+        <h2>一键换整套<br>10 秒出门</h2>
+        <p>1000+ 组件、10 万+ 壁纸，不用自己搭；会员期内全部解锁、全场无广告。</p>
+      </div>
+      <div class="perks">
+        <div class="perk"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M6.5 17.5l11-11"/></svg>全场无广告</div>
+        <div class="perk"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>1000+ 组件</div>
+        <div class="perk"><svg viewBox="0 0 24 24"><path d="M12 3l2.2 6.1L20 11l-5.8 1.9L12 19l-2.2-6.1L4 11l5.8-1.9z"/></svg>每日上新</div>
+      </div>
+      <div class="plans">
+        <div class="plan" onclick="selectPlan(this)"><div class="row"><span class="nm">周会员</span><span class="pr">¥18<small>/周</small></span></div><div class="ds">适合先试一周</div></div>
+        <div class="plan sel" onclick="selectPlan(this)"><span class="tag">推荐 · 3 天免费</span><div class="row"><span class="nm">月会员</span><span class="pr">¥38<small>/月</small></span></div><div class="ds">前 3 天免费，之后 ¥38/月</div></div>
+        <div class="plan" onclick="selectPlan(this)"><div class="row"><span class="nm">年会员</span><span class="pr">¥198<small>/年</small></span></div><div class="ds">约 ¥16.5/月，比月付省 57%</div></div>
+      </div>
+      <div class="cta"><button class="btn btn-dark" onclick="startTrial()">开始 3 天免费试用</button></div>
+      <div class="proof">已有 12.8 万人开通 · 4.9 分</div>
+      <div class="legal">试用期内可随时取消：<b>设置 → Apple ID → 订阅</b><br>到期自动续费，可随时关闭；取消后仍可用到本期结束。</div>
+    </div>
+  </section>
+
+  <!-- ================= APPLYING ================= -->
+  <div class="apply" id="applying">
+    <div>
+      <div class="ring"></div>
+      <h3>正在套用…</h3>
+      <p id="applyStep">替换图标 1/3</p>
+    </div>
+  </div>
+
+  <!-- ================= APPLIED ================= -->
+  <section class="screen hidden" id="applied">
+    <div class="status"><span>9:41</span><span class="right"><span class="bars"><i></i><i></i><i></i></span><span class="batt"><i></i></span></span></div>
+    <div style="padding:8px 22px 0">
+      <div class="check" style="margin:6px auto 14px">✓</div>
+      <h2 style="margin:0;text-align:center;font-size:22px">已套用到桌面</h2>
+      <p style="text-align:center;color:#8A8178;font-size:11.5px;margin:6px 0 14px" id="appliedName">奶油小熊 · 整套</p>
+      <div style="display:flex;justify-content:center"><div class="mock"><div class="mock-screen" id="appliedMock"></div></div></div>
+      <div class="incl" style="margin-top:16px">
+        <div><b>12</b><span>组件已换</span></div>
+        <div><b>40</b><span>图标已换</span></div>
+        <div><b>1</b><span>壁纸已换</span></div>
+      </div>
+      <div style="margin-top:16px"><button class="btn btn-dark" onclick="finishApply()">完成</button></div>
+      <div style="margin-top:9px"><button class="btn btn-ghost" onclick="toast('去桌面看看吧（原型演示）')">去桌面看看</button></div>
+    </div>
+  </section>
+
+  <!-- ================= SHEET ================= -->
+  <div class="dim" id="dim" onclick="closeSheet()"></div>
+  <div class="sheet" id="sheet">
+    <div class="grab"></div>
+    <div class="prev" id="sheetEmoji">🐻</div>
+    <h3 id="sheetName">奶油小熊 · 整套桌面</h3>
+    <div class="meta" id="sheetMeta">12 个组件 · 40 个图标 · 1 张壁纸</div>
+    <div class="why">这套是本周热门。想先试试？看一段 15 秒广告，就能用 24 小时；不想看广告，VIP 可以一次解锁全部。</div>
+    <button class="btn btn-dark" style="margin-top:12px" onclick="goPay()">开通 VIP，解锁全部</button>
+    <button class="btn btn-ghost" id="adBtn" onclick="watchAd()">看 15 秒广告，解锁这套 24 小时</button>
+    <div class="note">VIP 可关闭全部广告 · 随时取消</div>
+  </div>
+
+  <!-- ================= TRIAL SUCCESS ================= -->
+  <div class="success" id="success">
+    <div>
+      <div class="check">✓</div>
+      <h3>3 天试用已开启</h3>
+      <p>全站组件、主题、壁纸已解锁<br>接下来 3 天，随便换。</p>
+      <button class="btn btn-dark" style="width:210px" onclick="trialDone()">去换一套桌面</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  const $ = s => document.querySelector(s);
+  const state = { vip:false, current:null, prev:'browse' };
+  let toastTimer = null;
+
+  const THEMES = {
+    bear:{name:'奶油小熊 · 整套', emoji:'🐻', meta:'12 个组件 · 40 个图标 · 1 张壁纸', vip:true,
+      grad:'linear-gradient(150deg,#FBE7D6,#F4DDEA 60%,#E6EEF5)', iconGrad:'linear-gradient(140deg,#F7DFC9,#EFD8F2)',
+      desc:'奶油色系 + 圆角图标，适合冬天。包含锁屏与桌面两套布局，按 4×6 网格排好，套用后不用再调。'},
+    moon:{name:'月相时钟', emoji:'🌙', meta:'6 个组件 · 1 张动态壁纸', vip:false,
+      grad:'linear-gradient(150deg,#DCEBE3,#E9F2EC 60%,#E3EDF7)', iconGrad:'linear-gradient(140deg,#DCEBE3,#EAF3EE)',
+      desc:'把月相做成桌面时钟，整点自动换一张。深色壁纸 + 低饱和图标，夜里看也不刺眼。'},
+    count:{name:'在一起 365', emoji:'🎂', meta:'1 个组件 · 3 种尺寸', vip:false,
+      grad:'linear-gradient(150deg,#E7DDF7,#F1E9FA 60%,#F7E9F1)', iconGrad:'linear-gradient(140deg,#E7DDF7,#F3E9FA)',
+      desc:'把纪念日放在锁屏上，每天自动更新天数。支持小/中/大三档。'},
+    batt:{name:'我的电量', emoji:'🔋', meta:'1 个组件 · 实时刷新', vip:false,
+      grad:'linear-gradient(150deg,#E2EAF8,#ECF2FA 60%,#E9F0F8)', iconGrad:'linear-gradient(140deg,#E2EAF8,#EDF3FB)',
+      desc:'电量、耳机、手表电量放一块，出门前看一眼就够。'},
+    rabbit:{name:'奶油兔', emoji:'🐰', meta:'1 个贴纸组件', vip:false,
+      grad:'linear-gradient(150deg,#FBE6EA,#FCEDF0 60%,#F8E9F5)', iconGrad:'linear-gradient(140deg,#FBE6EA,#FDEEF1)',
+      desc:'会眨眼的小兔子，放在锁屏右下角，点一下会跳。'},
+    ai1:{name:'雪窗奶油', emoji:'❄️', meta:'AI 生成 · 8 个组件 · 24 个图标', vip:false, ai:true,
+      grad:'linear-gradient(150deg,#F3E7D8,#E8E3F3 60%,#DDEBF0)', iconGrad:'linear-gradient(140deg,#F3E7D8,#E8E3F3)',
+      desc:'按「下雪的窗边，一杯热可可」生成：奶油底 + 雾蓝点缀，图标统一圆角。'},
+    ai2:{name:'雪夜暗黑', emoji:'🌌', meta:'AI 生成 · 8 个组件 · 24 个图标', vip:false, ai:true,
+      grad:'linear-gradient(150deg,#2B2A33,#3A3340 60%,#20242C)', iconGrad:'linear-gradient(140deg,#2B2A33,#3A3340)',
+      desc:'同一句提示词的暗色版本：深灰底 + 暖光点缀，适合 OLED 屏。'}
+  };
+
+  function toast(msg){
+    const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('show'), 1800);
+  }
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+    $('#'+id).classList.remove('hidden');
+    $('#'+id).scrollTop = 0;
+  }
+  function backTo(id){ showScreen(id); }
+
+  function filterCards(q){
+    q = (q||'').trim();
+    document.querySelectorAll('#browse .card').forEach(c=>{
+      const hit = !q || (c.dataset.name||'').indexOf(q) >= 0;
+      c.style.display = hit ? '' : 'none';
+    });
+  }
+
+  function fav(e, el){
+    e.stopPropagation();
+    el.classList.toggle('on');
+    el.textContent = el.classList.contains('on') ? '♥' : '♡';
+    toast(el.classList.contains('on') ? '已收藏' : '已取消收藏');
+  }
+
+  function mockHTML(theme){
+    const icons = ['📷','📅','🎵','⏰','🌈','💬','📝','🧸'];
+    const bg = theme.grad;
+    return `<div class="mock-screen" style="background:${bg}">
+      <div class="mock-widget"><span>${theme.emoji} 15:40</span><span>25°</span></div>
+      <div class="mock-grid">${icons.map((e,i)=>`<i style="background:${i%2?'rgba(255,255,255,.55)':'rgba(255,255,255,.85)'}">${e}</i>`).join('')}</div>
+      <div class="mock-music"><span>🎧 奶油电台</span><em></em></div>
+      <div class="mock-photo">${theme.emoji}</div>
+      <div class="mock-2"><i>♡ 365</i><i>⏱ 12:30</i></div>
+    </div>`;
+  }
+
+  function openDetail(id){
+    const t = THEMES[id]; if (!t) return;
+    state.current = id;
+    $('#dtName').textContent = t.name;
+    $('#dtMeta').textContent = t.meta;
+    $('#dtDesc').textContent = t.desc;
+    $('#dtMock').outerHTML = mockHTML(t).replace('class="mock-screen"','class="mock-screen" id="dtMock"');
+    $('#dtApply').textContent = (t.vip && !state.vip) ? '开通 VIP 后套用' : '一键套用';
+    $('#dtFav').textContent = '♡';
+    $('#dtFav').classList.remove('on');
+    document.querySelector('#detail .dt').style.background = t.grad;
+    showScreen('detail');
+  }
+
+  function applyCurrent(){
+    const t = THEMES[state.current];
+    if (!t) return;
+    if (t.vip && !state.vip) { openSheet(); return; }
+    startApply();
+  }
+
+  function openSheet(){
+    const t = THEMES[state.current] || THEMES.bear;
+    $('#sheetEmoji').textContent = t.emoji;
+    $('#sheetName').textContent = t.name;
+    $('#sheetMeta').textContent = t.meta;
+    $('#dim').classList.add('show');
+    $('#sheet').classList.add('show');
+  }
+  function closeSheet(){
+    $('#dim').classList.remove('show');
+    $('#sheet').classList.remove('show');
+  }
+
+  function watchAd(){
+    const btn = $('#adBtn');
+    if (btn.dataset.busy) return;
+    btn.dataset.busy = '1';
+    let n = 3;
+    btn.textContent = `广告播放中 ${n}s…`;
+    const t = setInterval(()=>{
+      n--;
+      if (n > 0) { btn.textContent = `广告播放中 ${n}s…`; return; }
+      clearInterval(t);
+      btn.textContent = '看 15 秒广告，解锁这套 24 小时';
+      delete btn.dataset.busy;
+      closeSheet();
+      startApply();
+    }, 800);
+  }
+
+  function startApply(){
+    $('#applying').classList.add('show');
+    const steps = ['替换图标 1/3','替换组件 2/3','应用壁纸 3/3'];
+    let i = 0;
+    $('#applyStep').textContent = steps[0];
+    const t = setInterval(()=>{
+      i++;
+      if (i < steps.length) { $('#applyStep').textContent = steps[i]; return; }
+      clearInterval(t);
+      $('#applying').classList.remove('show');
+      finishToApplied();
+    }, 650);
+  }
+
+  function finishToApplied(){
+    const t = THEMES[state.current] || THEMES.bear;
+    $('#appliedName').textContent = t.name;
+    $('#appliedMock').outerHTML = mockHTML(t).replace('class="mock-screen"','class="mock-screen" id="appliedMock"');
+    showScreen('applied');
+  }
+  function finishApply(){
+    showScreen('browse');
+    toast('已应用，去桌面看看吧');
+  }
+
+  function goPay(){
+    closeSheet();
+    state.prev = document.querySelector('.screen:not(.hidden)').id;
+    showScreen('paywall');
+  }
+  function backFromPay(){
+    showScreen(state.prev === 'paywall' ? 'browse' : state.prev);
+  }
+  function backFromDetail(){
+    showScreen('browse');
+  }
+  function share(){ toast('已复制分享链接（原型演示）'); }
+
+  function selectPlan(el){
+    document.querySelectorAll('.plan').forEach(p=>p.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+  function startTrial(){ $('#success').classList.add('show'); }
+  function trialDone(){
+    state.vip = true;
+    $('#success').classList.remove('show');
+    showScreen('browse');
+    toast('VIP 已解锁，VIP 主题可直接套用');
+  }
+
+  function pickStyle(el){
+    document.querySelectorAll('.selchip').forEach(c=>c.classList.remove('on'));
+    el.classList.add('on');
+  }
+
+  function usePrompt(t){ $('#prompt').value = t; toast('已填入提示词'); }
+
+  function generate(){
+    $('#skWrap').classList.remove('hidden');
+    $('#aiResults').classList.add('hidden');
+    setTimeout(()=>{
+      $('#skWrap').classList.add('hidden');
+      $('#aiResults').classList.remove('hidden');
+      const grid = $('#resultGrid');
+      grid.innerHTML = ['ai1','ai2','bear','moon'].map(id=>{
+        const t = THEMES[id];
+        return `<div class="card" onclick="openDetail('${id}')">
+          <div class="thumb" style="background:${t.grad}">${t.emoji}${t.ai?'<span class="badge">AI</span>':''}</div>
+          <p>${t.name}</p><small>${t.meta}</small></div>`;
+      }).join('');
+      toast('已生成 4 套，挑一套试试');
+    }, 1400);
+  }
+
+  // deterministic routes for screenshots / demo
+  if (location.search.indexOf('shot') >= 0) document.body.classList.add('shot');
+  const h = location.hash;
+  if (h === '#detail') openDetail('bear');
+  if (h === '#ai') showScreen('ai');
+  if (h === '#airesult') { showScreen('ai'); generate(); }
+  if (h === '#sheet') { openDetail('bear'); openSheet(); }
+  if (h === '#paywall') { state.prev='detail'; openDetail('bear'); goPay(); }
+  if (h === '#applied') { state.current='bear'; finishToApplied(); }
+</script>
+</body>
+</html>
