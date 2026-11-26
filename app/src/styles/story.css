@@ -1,0 +1,215 @@
+/* ---------- 钉住的分段叙事：主图固定，右栏滚动驱动 ---------- */
+
+.story {
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+  gap: clamp(28px, 4vw, 72px);
+  margin-top: clamp(36px, 5vh, 60px);
+}
+
+.story__media {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  height: 100svh;
+  padding-block: 28px;
+}
+
+.story__frame {
+  --ring: clamp(170px, 18vw, 240px);
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--rule-strong);
+  background: #fff;
+  cursor: zoom-in;
+}
+
+/* 只留圆环内的区域清楚，其余压暗一点 */
+.story__spot {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.45s var(--ease);
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(21, 23, 27, 0) 0,
+    rgba(21, 23, 27, 0) calc(var(--ring) / 2 + 10px),
+    rgba(21, 23, 27, 0.11) calc(var(--ring) / 2 + 70px)
+  );
+}
+
+.story__spot.is-on {
+  opacity: 1;
+}
+
+.story__frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.story__ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--ring);
+  height: var(--ring);
+  margin-left: calc(var(--ring) / -2);
+  margin-top: calc(var(--ring) / -2);
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0.28;
+  box-shadow: 0 0 0 6px rgba(18, 70, 60, 0.04);
+  transition: opacity 0.4s var(--ease), box-shadow 0.4s var(--ease);
+  pointer-events: none;
+}
+
+.story__ring.is-on {
+  opacity: 1;
+  box-shadow: 0 0 0 8px rgba(18, 70, 60, 0.07), 0 0 0 1px rgba(18, 70, 60, 0.14);
+}
+
+.story__tag {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  translate: -50% 0;
+  padding: 6px 12px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+  pointer-events: none;
+}
+
+.story__tag.is-on {
+  opacity: 1;
+}
+
+.story__rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.story__rail button {
+  display: flex;
+  gap: 8px;
+  padding: 0 0 6px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.story__rail button span {
+  font-family: var(--font-data);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+.story__rail button.is-on {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.story__steps {
+  display: flex;
+  flex-direction: column;
+}
+
+.story__step {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  min-height: 100svh;
+  max-width: 42ch;
+  opacity: 0.4;
+  transition: opacity 0.45s var(--ease);
+}
+
+.story__step.is-on {
+  opacity: 1;
+}
+
+.story__no {
+  font-family: var(--font-data);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+}
+
+.story__title {
+  font-family: var(--font-serif);
+  font-size: clamp(24px, 2.1vw, 32px);
+  font-weight: 800;
+  line-height: 1.28;
+  letter-spacing: -0.01em;
+}
+
+.story__text {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--ink-2);
+}
+
+.story__thumb {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .story {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  /* 手机上不做钉住：每段配一张按焦点裁切的图 */
+  .story__media {
+    display: none;
+  }
+
+  .story__step {
+    min-height: 0;
+    max-width: none;
+    padding-block: 30px;
+    border-top: 1px solid var(--rule);
+    opacity: 1;
+  }
+
+  .story__thumb {
+    display: block;
+    width: 100%;
+    height: 280px;
+    margin-top: 8px;
+    object-fit: cover;
+    border: 1px solid var(--rule-strong);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story__ring,
+  .story__tag,
+  .story__step {
+    transition: none !important;
+  }
+}

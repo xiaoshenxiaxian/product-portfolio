@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PRD 预览 · 沈俊辉</title>
+    <meta name="robots" content="noindex" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; }
+      body {
+        font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+        background: #e8e5de;
+        color: #15171b;
+        -webkit-font-smoothing: antialiased;
+      }
+      .bar {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 56px;
+        padding: 0 clamp(12px, 3vw, 24px);
+        background: rgba(232, 229, 222, 0.94);
+        border-bottom: 1px solid rgba(21, 23, 27, 0.14);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+      .bar a {
+        color: #15171b;
+        text-decoration: none;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        padding: 8px 14px;
+        border: 1px solid rgba(21, 23, 27, 0.22);
+        border-radius: 999px;
+        transition: background 0.2s, color 0.2s, border-color 0.2s;
+        white-space: nowrap;
+      }
+      .bar a:hover { background: #15171b; border-color: #15171b; color: #e8e5de; }
+      .title {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        color: #5d626b;
+      }
+      .title b { color: #15171b; font-weight: 600; }
+      .doc {
+        width: min(980px, 100% - 32px);
+        margin: 20px auto 60px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .doc img {
+        display: block;
+        width: 100%;
+        height: auto;
+        background: #fff;
+        border: 1px solid rgba(21, 23, 27, 0.12);
+        box-shadow: 0 2px 18px rgba(20, 22, 26, 0.10);
+      }
+      .state {
+        padding: 60px 0;
+        text-align: center;
+        font-size: 13px;
+        color: #5d626b;
+      }
+      .state a { color: #15171b; }
+      @media (max-width: 560px) {
+        .bar { gap: 8px; height: 52px; }
+        .bar a { padding: 7px 10px; font-size: 12px; }
+        .doc { width: calc(100% - 20px); margin-top: 12px; gap: 10px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bar">
+      <a href="/#works">← 返回作品集</a>
+      <span class="title" id="title">PRD</span>
+      <a id="raw" href="#" target="_blank" rel="noopener">新窗口打开 PDF</a>
+      <a id="dl" href="#" download>下载 PDF</a>
+    </div>
+
+    <div class="doc" id="doc"></div>
+
+    <script>
+      const slug = (new URLSearchParams(location.search).get('f') || 'huoliyuan-order-prd').replace(/[^a-zA-Z0-9-]/g, '')
+      const doc = document.getElementById('doc')
+      const titleEl = document.getElementById('title')
+
+      async function main() {
+        const res = await fetch('/docs/manifest.json')
+        const { docs } = await res.json()
+        const meta = docs[slug]
+
+        if (!meta) {
+          titleEl.textContent = '文档不存在'
+          doc.innerHTML = '<p class="state">没有找到这份文档。<a href="/#works">返回作品集</a></p>'
+          return
+        }
+
+        titleEl.innerHTML = '<b>' + meta.title + '</b> · ' + meta.pages + ' 页'
+        const pdf = '/docs/' + meta.pdf
+        document.getElementById('raw').href = pdf
+        document.getElementById('dl').href = pdf
+
+        const frag = document.createDocumentFragment()
+        for (let i = 1; i <= meta.pages; i += 1) {
+          const img = document.createElement('img')
+          img.src = '/docs/pages/' + slug + '/' + String(i).padStart(2, '0') + '.webp'
+          img.alt = meta.title + ' 第 ' + i + ' 页'
+          img.loading = i <= 2 ? 'eager' : 'lazy'
+          frag.appendChild(img)
+        }
+        doc.appendChild(frag)
+      }
+
+      main().catch(() => {
+        doc.innerHTML = '<p class="state">文档加载失败，可点右上角「新窗口打开 PDF」。</p>'
+      })
+    </script>
+  </body>
+</html>

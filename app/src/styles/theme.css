@@ -1,0 +1,125 @@
+/* ---------- 深浅两套配色 ---------- */
+
+html[data-theme='dark'] {
+  --paper: #14161a;
+  --paper-2: #1c1f24;
+  --ink: #e9e6df;
+  --ink-2: #c6c9cf;
+  --muted: #8b9199;
+  --rule: rgba(233, 230, 223, 0.16);
+  --rule-strong: rgba(233, 230, 223, 0.32);
+  --accent: #82b7a6;
+  --accent-ink: #14161a;
+}
+
+html[data-theme='dark'] ::selection {
+  background: var(--accent);
+  color: #14161a;
+}
+
+/* 文档与原型截图像放在案头的纸，深色下也保持白底 */
+html[data-theme='dark'] .doc,
+html[data-theme='dark'] .story__frame {
+  background: #fff;
+}
+
+/* 灯箱始终是暗房 */
+html[data-theme='dark'] .lb {
+  background: #0f1115;
+  color: #e9e6df;
+}
+
+/* ---------- 圆形扩散换肤按钮 ---------- */
+
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.theme-toggle:hover {
+  border-color: var(--rule-strong);
+  background: var(--paper-2);
+  color: var(--ink);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.theme-toggle__icons {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.theme-toggle__icons svg {
+  position: absolute;
+  inset: 0;
+  width: 20px;
+  height: 20px;
+  transition: opacity 0.28s var(--ease), transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.theme-sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.theme-moon {
+  opacity: 0;
+  transform: rotate(-70deg) scale(0.6);
+}
+
+html[data-theme='dark'] .theme-sun {
+  opacity: 0;
+  transform: rotate(70deg) scale(0.6);
+}
+
+html[data-theme='dark'] .theme-moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+/* ---------- View Transitions：从按钮中心圆形展开 / 收回 ---------- */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* 变深：新配色在上，从圆心长出来 */
+html.theme-expand::view-transition-new(root) {
+  z-index: 2;
+}
+
+html.theme-expand::view-transition-old(root) {
+  z-index: 1;
+}
+
+/* 变浅：旧配色在上，从圆心缩回去，露出下面的浅色 */
+html.theme-collapse::view-transition-old(root) {
+  z-index: 2;
+}
+
+html.theme-collapse::view-transition-new(root) {
+  z-index: 1;
+}
+
+@media (max-width: 900px) {
+  .theme-toggle {
+    width: 44px;
+    height: 44px;
+  }
+}

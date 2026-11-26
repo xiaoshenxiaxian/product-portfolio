@@ -1,0 +1,136 @@
+/* ---------- 每屏一套进入动画（只播一次） ---------- */
+
+/* 栏目线：从左侧抽出来 */
+.sec__label {
+  position: relative;
+  border-top-color: transparent;
+}
+
+.sec__label::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: 100%;
+  height: 1px;
+  background: var(--rule-strong);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.7s var(--ease);
+}
+
+.is-in .sec__label::before {
+  transform: scaleX(1);
+}
+
+/* ---------- 第二屏：案例从西边一个个放进来 ---------- */
+
+.arc {
+  overflow: clip;
+}
+
+.arc__node {
+  opacity: 0;
+  transform: translate(calc(-50% - 190px), -50%) scale(0.96);
+  transition: opacity 0.5s var(--ease), transform 0.85s cubic-bezier(0.22, 0.68, 0.24, 1);
+  transition-delay: calc(var(--i, 0) * 95ms);
+}
+
+.arc-sec.is-in .arc__node {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.arc-sec.is-in .arc__node:hover,
+.arc-sec.is-in .arc__node:focus-visible {
+  transform: translate(-50%, -50%) translateY(-8px) scale(1);
+}
+
+.arc__line {
+  opacity: 0;
+  transition: opacity 0.9s var(--ease) 0.18s;
+}
+
+.arc-sec.is-in .arc__line {
+  opacity: 1;
+}
+
+/* ---------- 第三屏：数字盖章，台账一行行落下 ---------- */
+
+.stat {
+  opacity: 0;
+  transform: scale(1.12) translateY(6px);
+  transition: opacity 0.4s var(--ease) calc(var(--i, 0) * 90ms),
+    transform 0.65s cubic-bezier(0.2, 0.7, 0.25, 1) calc(var(--i, 0) * 90ms);
+}
+
+#grounding.is-in .stat {
+  opacity: 1;
+  transform: none;
+}
+
+.audience tbody tr {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.45s var(--ease) calc(260ms + var(--i, 0) * 90ms),
+    transform 0.55s cubic-bezier(0.2, 0.7, 0.25, 1) calc(260ms + var(--i, 0) * 90ms);
+}
+
+#grounding.is-in .audience tbody tr {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- 第四屏：联系方式从东边进来，结束语从下往上抬 ---------- */
+
+.about__intro {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s var(--ease), transform 0.65s cubic-bezier(0.2, 0.7, 0.25, 1);
+}
+
+#about.is-in .about__intro {
+  opacity: 1;
+  transform: none;
+}
+
+.contact__row {
+  opacity: 0;
+  transform: translateX(28px);
+  transition: opacity 0.4s var(--ease) calc(140ms + var(--i, 0) * 60ms),
+    transform 0.55s cubic-bezier(0.2, 0.7, 0.25, 1) calc(140ms + var(--i, 0) * 60ms);
+}
+
+#about.is-in .contact__row {
+  opacity: 1;
+  transform: none;
+}
+
+.about__closing {
+  overflow: hidden;
+}
+
+.about__closing span {
+  display: block;
+  transform: translateY(112%);
+  transition: transform 0.75s cubic-bezier(0.22, 0.68, 0.24, 1) calc(300ms + var(--i, 0) * 130ms);
+}
+
+#about.is-in .about__closing span {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arc__node,
+  .stat,
+  .audience tbody tr,
+  .about__intro,
+  .contact__row,
+  .about__closing span,
+  .arc__line,
+  .sec__label::before {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

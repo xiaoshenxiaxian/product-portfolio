@@ -1,0 +1,44 @@
+{
+  "docs": {
+    "huoliyuan-order-prd": {
+      "title": "订单管理与支付实名认证模块 · PRD",
+      "pages": 8,
+      "pdf": "huoliyuan-order-prd.pdf"
+    },
+    "order-help-center": {
+      "title": "住宿订单帮助中心",
+      "pages": 3,
+      "pdf": "order-help-center.pdf"
+    },
+    "guanjing-prd": {
+      "title": "观境文旅 · 景区／博物馆小程序 PRD",
+      "pages": 16,
+      "pdf": "guanjing-prd.pdf"
+    },
+    "zhuaban-prd": {
+      "title": "爪伴 · 同城宠物领养管理系统 PRD",
+      "pages": 12,
+      "pdf": "zhuaban-prd.pdf"
+    },
+    "zhilan-prd": {
+      "title": "知澜 · 在线教育平台 PRD",
+      "pages": 12,
+      "pdf": "zhilan-prd.pdf"
+    },
+    "desktop-prd": {
+      "title": "桌面美化 · 付费墙 PRD 摘要",
+      "pages": 2,
+      "pdf": "desktop-prd.pdf"
+    },
+    "yuexi-prd": {
+      "title": "月汐 · 树洞 PRD 摘要",
+      "pages": 2,
+      "pdf": "yuexi-prd.pdf"
+    },
+    "agent-prd": {
+      "title": "需求拆解 Agent · PRD 摘要",
+      "pages": 2,
+      "pdf": "agent-prd.pdf"
+    }
+  }
+}
